@@ -22,6 +22,8 @@ GOOGLE_REFRESH_TOKEN = os.environ['GOOGLE_REFRESH_TOKEN']
 google_access_token = None
 google_access_expires_at = datetime.datetime.now()
 
+WEATHER_API_URL = "https://api.weather.gov/stations/KBKF/observations/latest"
+
 INSIDE_TEMPERTURE_NAME = "nest_ambient_temperature_celsius"
 INSIDE_TEMPERTURE_HELP = f"HELP {INSIDE_TEMPERTURE_NAME} Inside temperature."
 INSIDE_TEMPERTURE_TYPE = f"TYPE {INSIDE_TEMPERTURE_NAME} gauge"
@@ -57,28 +59,50 @@ NEST_UP_HELP = f"HELP {NEST_UP_NAME} Is Nest API connection successful."
 NEST_UP_TYPE = f"TYPE {NEST_UP_NAME} gauge"
 # nest_up 1
 
-WEATHER_HUMIDITY_NAME = "nest_weather_humidity_percent"
-WEATHER_HUMIDITY_HELP = f"HELP {WEATHER_HUMIDITY_NAME} Outside humidity."
-WEATHER_HUMIDITY_TYPE = f"TYPE {WEATHER_HUMIDITY_NAME} gauge"
-# nest_weather_humidity_percent 82
-
-
-WEATHER_PRESSURE_NAME = "nest_weather_pressure_hectopascal"
-WEATHER_PRESSURE_HELP = f"HELP {WEATHER_PRESSURE_NAME} Outside pressure."
-WEATHER_PRESSURE_TYPE = f"TYPE {WEATHER_PRESSURE_NAME} gauge"
-# nest_weather_pressure_hectopascal 1016
-
-
-WEATHER_TEMPERATURE_NAME = "nest_weather_temperature_celsius"
+WEATHER_TEMPERATURE_NAME = "weather_temperature_celsius"
 WEATHER_TEMPERATURE_HELP = f"HELP {WEATHER_TEMPERATURE_NAME} Outside temperature."
 WEATHER_TEMPERATURE_TYPE = f"TYPE {WEATHER_TEMPERATURE_NAME} gauge"
-# nest_weather_temperature_celsius 17.57
+# weather_temperature_celsius 17.57
 
+WEATHER_DEWPOINT_NAME = "weather_dewpoint_celsius"
+WEATHER_DEWPOINT_HELP = f"HELP {WEATHER_DEWPOINT_NAME} Outside dewpoint."
+WEATHER_DEWPOINT_TYPE = f"TYPE {WEATHER_DEWPOINT_NAME} gauge"
+# weather_dewpoint_celsius 17.57
 
-WEATHER_UP_NAME = "nest_weather_up"
-WEATHER_UP_HELP = f"HELP {WEATHER_UP_NAME} Is OpenWeatherMap API connection successful.."
+WEATHER_HUMIDITY_NAME = "weather_humidity_percent"
+WEATHER_HUMIDITY_HELP = f"HELP {WEATHER_HUMIDITY_NAME} Outside humidity."
+WEATHER_HUMIDITY_TYPE = f"TYPE {WEATHER_HUMIDITY_NAME} gauge"
+# weather_humidity_percent 82
+
+WEATHER_PRESSURE_NAME = "weather_pressure_pascal"
+WEATHER_PRESSURE_HELP = f"HELP {WEATHER_PRESSURE_NAME} Outside pressure."
+WEATHER_PRESSURE_TYPE = f"TYPE {WEATHER_PRESSURE_NAME} gauge"
+# weather_pressure_pascal 101600
+
+WEATHER_WINDSPEED_NAME = "weather_windspeed_km_per_hr"
+WEATHER_WINDSPEED_HELP = f"HELP {WEATHER_WINDSPEED_NAME} Outside windspeed."
+WEATHER_WINDSPEED_TYPE = f"TYPE {WEATHER_WINDSPEED_NAME} gauge"
+# weather_windspeed_km_per_hr 12
+
+WEATHER_PRECIPITATION_LAST_HOUR_NAME = "weather_precipitation_last_hour_meters"
+WEATHER_PRECIPITATION_LAST_HOUR_HELP = f"HELP {WEATHER_PRECIPITATION_LAST_HOUR_NAME} Outside precipitation in the last hour."
+WEATHER_PRECIPITATION_LAST_HOUR_TYPE = f"TYPE {WEATHER_PRECIPITATION_LAST_HOUR_NAME} gauge"
+# weather_windspeed_km_per_hr 0.01
+
+WEATHER_PRECIPITATION_LAST_3HOURS_NAME = "weather_precipitation_last_3hours_meters"
+WEATHER_PRECIPITATION_LAST_3HOURS_HELP = f"HELP {WEATHER_PRECIPITATION_LAST_3HOURS_NAME} Outside precipitation in the last 3 hours."
+WEATHER_PRECIPITATION_LAST_3HOURS_TYPE = f"TYPE {WEATHER_PRECIPITATION_LAST_3HOURS_NAME} gauge"
+# weather_windspeed_km_per_hr 0.03
+
+WEATHER_PRECIPITATION_LAST_6HOURS_NAME = "weather_precipitation_last_6hours_meters"
+WEATHER_PRECIPITATION_LAST_6HOURS_HELP = f"HELP {WEATHER_PRECIPITATION_LAST_6HOURS_NAME} Outside precipitation in the last 6 hours."
+WEATHER_PRECIPITATION_LAST_6HOURS_TYPE = f"TYPE {WEATHER_PRECIPITATION_LAST_6HOURS_NAME} gauge"
+# weather_windspeed_km_per_hr 0.05
+
+WEATHER_UP_NAME = "weather_up"
+WEATHER_UP_HELP = f"HELP {WEATHER_UP_NAME} Is Weather.gov API connection successful."
 WEATHER_UP_TYPE = f"TYPE {WEATHER_UP_NAME} gauge"
-# nest_weather_up 1
+# weather_up 1
 
 @app.route('/')
 def hello():
@@ -114,9 +138,51 @@ def get_metrics():
 		metrics.extend([NEST_UP_HELP, NEST_UP_TYPE])
 		metrics.append(f"{NEST_UP_NAME} 0")
 
+	try:
+		weather_stats = get_weather_stats()
+
+		metrics.extend([WEATHER_TEMPERATURE_HELP, WEATHER_TEMPERATURE_TYPE])
+		metrics.append(f"{WEATHER_TEMPERATURE_NAME} {weather_stats['properties']['temperature']['value']}")
+
+		metrics.extend([WEATHER_HUMIDITY_HELP, WEATHER_HUMIDITY_TYPE])
+		metrics.append(f"{WEATHER_HUMIDITY_NAME} {weather_stats['properties']['relativeHumidity']['value']}")
+
+		metrics.extend([WEATHER_DEWPOINT_HELP, WEATHER_DEWPOINT_TYPE])
+		metrics.append(f"{WEATHER_DEWPOINT_NAME} {weather_stats['properties']['dewpoint']['value']}")
+
+		metrics.extend([WEATHER_WINDSPEED_HELP, WEATHER_WINDSPEED_TYPE])
+		metrics.append(f"{WEATHER_WINDSPEED_NAME} {weather_stats['properties']['windSpeed']['value']}")
+
+		metrics.extend([WEATHER_PRESSURE_HELP, WEATHER_PRESSURE_TYPE])
+		metrics.append(f"{WEATHER_PRESSURE_NAME} {weather_stats['properties']['barometricPressure']['value']}")
+
+		metrics.extend([WEATHER_PRECIPITATION_LAST_HOUR_HELP, WEATHER_PRECIPITATION_LAST_HOUR_TYPE])
+		metrics.append(f"{WEATHER_PRECIPITATION_LAST_HOUR_NAME} {convert_precipitation(weather_stats['properties']['precipitationLastHour']['value'])}")
+
+		metrics.extend([WEATHER_PRECIPITATION_LAST_3HOURS_HELP, WEATHER_PRECIPITATION_LAST_3HOURS_TYPE])
+		metrics.append(f"{WEATHER_PRECIPITATION_LAST_3HOURS_NAME} {convert_precipitation(weather_stats['properties']['precipitationLast3Hours']['value'])}")
+
+		metrics.extend([WEATHER_PRECIPITATION_LAST_6HOURS_HELP, WEATHER_PRECIPITATION_LAST_6HOURS_TYPE])
+		metrics.append(f"{WEATHER_PRECIPITATION_LAST_6HOURS_NAME} {convert_precipitation(weather_stats['properties']['precipitationLast6Hours']['value'])}")
+
+		metrics.extend([WEATHER_UP_HELP, WEATHER_UP_TYPE])
+		metrics.append(f"{WEATHER_UP_NAME} 1")
+	except:
+		logging.error("Weather.gov API Failure")
+		metrics.extend([WEATHER_UP_HELP, WEATHER_UP_TYPE])
+		metrics.append(f"{WEATHER_UP_NAME} 0")
+
+
 	metrics.append('')
 	return Response("\n".join(metrics), mimetype='text/plain')
 
+def get_weather_stats():
+	response = requests.request("GET", WEATHER_API_URL, headers={}, data={})
+
+	logging.debug(WEATHER_API_URL)
+	logging.debug(response.text)
+
+	return response.json()
 
 def get_google_stats():
 	headers = {
@@ -172,6 +238,12 @@ def convert_nest_fan_state(state_str):
 			return 1
 		case 'OFF':
 			return 0
+
+def convert_precipitation(weather_gov_response):
+	if weather_gov_response:
+		return weather_gov_response / 1000
+	else:
+		return 0
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0', port=8000)
