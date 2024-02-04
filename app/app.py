@@ -25,83 +25,83 @@ google_access_expires_at = datetime.datetime.now()
 WEATHER_API_URL = "https://api.weather.gov/stations/KBKF/observations/latest"
 
 INSIDE_TEMPERTURE_NAME = "nest_ambient_temperature_celsius"
-INSIDE_TEMPERTURE_HELP = f"HELP {INSIDE_TEMPERTURE_NAME} Inside temperature."
-INSIDE_TEMPERTURE_TYPE = f"TYPE {INSIDE_TEMPERTURE_NAME} gauge"
+INSIDE_TEMPERTURE_HELP = f"# HELP {INSIDE_TEMPERTURE_NAME} Inside temperature."
+INSIDE_TEMPERTURE_TYPE = f"# TYPE {INSIDE_TEMPERTURE_NAME} gauge"
 # nest_ambient_temperature_celsius{label="Living-Room"} 23.5
 
 HVAC_STATE_NAME = "nest_hvac_state"
-HVAC_STATE_HELP = f"HELP {HVAC_STATE_NAME} HVAC status, -1 = cooling, 0 = off, 1 = heating."
-HVAC_STATE_TYPE = f"TYPE {HVAC_STATE_NAME} gauge"
+HVAC_STATE_HELP = f"# HELP {HVAC_STATE_NAME} HVAC status, -1 = cooling, 0 = off, 1 = heating."
+HVAC_STATE_TYPE = f"# TYPE {HVAC_STATE_NAME} gauge"
 # nest_hvac_state{label="Living-Room"} 0
 
 FAN_STATE_NAME = "nest_fan_state"
-FAN_STATE_HELP = f"HELP {FAN_STATE_NAME} HVAC Fan status"
-FAN_STATE_TYPE = f"TYPE {FAN_STATE_NAME} gauge"
+FAN_STATE_HELP = f"# HELP {FAN_STATE_NAME} HVAC Fan status"
+FAN_STATE_TYPE = f"# TYPE {FAN_STATE_NAME} gauge"
 # nest_hvac_state{label="Living-Room"} 0
 
 INSIDE_HUMIDITY_NAME = "nest_humidity_percent"
-INSIDE_HUMIDITY_HELP = f"HELP {INSIDE_HUMIDITY_NAME} Inside humidity."
-INSIDE_HUMIDITY_TYPE = f"TYPE {INSIDE_HUMIDITY_NAME} gauge"
+INSIDE_HUMIDITY_HELP = f"# HELP {INSIDE_HUMIDITY_NAME} Inside humidity."
+INSIDE_HUMIDITY_TYPE = f"# TYPE {INSIDE_HUMIDITY_NAME} gauge"
 # nest_humidity_percent{label="Living-Room"} 55
 
 SETPOINT_HEATING_NAME = "nest_setpoint_temperature_heating_celsius"
-SETPOINT_HEATING_HELP = f"HELP {SETPOINT_HEATING_NAME} Setpoint temperature for heating."
-SETPOINT_HEATING_TYPE = f"TYPE {SETPOINT_HEATING_NAME} gauge"
+SETPOINT_HEATING_HELP = f"# HELP {SETPOINT_HEATING_NAME} Setpoint temperature for heating."
+SETPOINT_HEATING_TYPE = f"# TYPE {SETPOINT_HEATING_NAME} gauge"
 # nest_setpoint_temperature_heating_celsius{label="Living-Room"} 18
 
 SETPOINT_COOLING_NAME = "nest_setpoint_temperature_cooling_celsius"
-SETPOINT_COOLING_HELP = f"HELP {SETPOINT_COOLING_NAME} Setpoint temperature for cooling."
-SETPOINT_COOLING_TYPE = f"TYPE {SETPOINT_COOLING_NAME} gauge"
+SETPOINT_COOLING_HELP = f"# HELP {SETPOINT_COOLING_NAME} Setpoint temperature for cooling."
+SETPOINT_COOLING_TYPE = f"# TYPE {SETPOINT_COOLING_NAME} gauge"
 # nest_setpoint_temperature_cooling_celsius{label="Living-Room"} 22
 
 NEST_UP_NAME = "nest_up"
-NEST_UP_HELP = f"HELP {NEST_UP_NAME} Is Nest API connection successful."
-NEST_UP_TYPE = f"TYPE {NEST_UP_NAME} gauge"
+NEST_UP_HELP = f"# HELP {NEST_UP_NAME} Is Nest API connection successful."
+NEST_UP_TYPE = f"# TYPE {NEST_UP_NAME} gauge"
 # nest_up 1
 
 WEATHER_TEMPERATURE_NAME = "weather_temperature_celsius"
-WEATHER_TEMPERATURE_HELP = f"HELP {WEATHER_TEMPERATURE_NAME} Outside temperature."
-WEATHER_TEMPERATURE_TYPE = f"TYPE {WEATHER_TEMPERATURE_NAME} gauge"
+WEATHER_TEMPERATURE_HELP = f"# HELP {WEATHER_TEMPERATURE_NAME} Outside temperature."
+WEATHER_TEMPERATURE_TYPE = f"# TYPE {WEATHER_TEMPERATURE_NAME} gauge"
 # weather_temperature_celsius 17.57
 
 WEATHER_DEWPOINT_NAME = "weather_dewpoint_celsius"
-WEATHER_DEWPOINT_HELP = f"HELP {WEATHER_DEWPOINT_NAME} Outside dewpoint."
-WEATHER_DEWPOINT_TYPE = f"TYPE {WEATHER_DEWPOINT_NAME} gauge"
+WEATHER_DEWPOINT_HELP = f"# HELP {WEATHER_DEWPOINT_NAME} Outside dewpoint."
+WEATHER_DEWPOINT_TYPE = f"# TYPE {WEATHER_DEWPOINT_NAME} gauge"
 # weather_dewpoint_celsius 17.57
 
 WEATHER_HUMIDITY_NAME = "weather_humidity_percent"
-WEATHER_HUMIDITY_HELP = f"HELP {WEATHER_HUMIDITY_NAME} Outside humidity."
-WEATHER_HUMIDITY_TYPE = f"TYPE {WEATHER_HUMIDITY_NAME} gauge"
+WEATHER_HUMIDITY_HELP = f"# HELP {WEATHER_HUMIDITY_NAME} Outside humidity."
+WEATHER_HUMIDITY_TYPE = f"# TYPE {WEATHER_HUMIDITY_NAME} gauge"
 # weather_humidity_percent 82
 
 WEATHER_PRESSURE_NAME = "weather_pressure_pascal"
-WEATHER_PRESSURE_HELP = f"HELP {WEATHER_PRESSURE_NAME} Outside pressure."
-WEATHER_PRESSURE_TYPE = f"TYPE {WEATHER_PRESSURE_NAME} gauge"
+WEATHER_PRESSURE_HELP = f"# HELP {WEATHER_PRESSURE_NAME} Outside pressure."
+WEATHER_PRESSURE_TYPE = f"# TYPE {WEATHER_PRESSURE_NAME} gauge"
 # weather_pressure_pascal 101600
 
 WEATHER_WINDSPEED_NAME = "weather_windspeed_km_per_hr"
-WEATHER_WINDSPEED_HELP = f"HELP {WEATHER_WINDSPEED_NAME} Outside windspeed."
-WEATHER_WINDSPEED_TYPE = f"TYPE {WEATHER_WINDSPEED_NAME} gauge"
+WEATHER_WINDSPEED_HELP = f"# HELP {WEATHER_WINDSPEED_NAME} Outside windspeed."
+WEATHER_WINDSPEED_TYPE = f"# TYPE {WEATHER_WINDSPEED_NAME} gauge"
 # weather_windspeed_km_per_hr 12
 
 WEATHER_PRECIPITATION_LAST_HOUR_NAME = "weather_precipitation_last_hour_meters"
-WEATHER_PRECIPITATION_LAST_HOUR_HELP = f"HELP {WEATHER_PRECIPITATION_LAST_HOUR_NAME} Outside precipitation in the last hour."
-WEATHER_PRECIPITATION_LAST_HOUR_TYPE = f"TYPE {WEATHER_PRECIPITATION_LAST_HOUR_NAME} gauge"
+WEATHER_PRECIPITATION_LAST_HOUR_HELP = f"# HELP {WEATHER_PRECIPITATION_LAST_HOUR_NAME} Outside precipitation in the last hour."
+WEATHER_PRECIPITATION_LAST_HOUR_TYPE = f"# TYPE {WEATHER_PRECIPITATION_LAST_HOUR_NAME} gauge"
 # weather_windspeed_km_per_hr 0.01
 
 WEATHER_PRECIPITATION_LAST_3HOURS_NAME = "weather_precipitation_last_3hours_meters"
-WEATHER_PRECIPITATION_LAST_3HOURS_HELP = f"HELP {WEATHER_PRECIPITATION_LAST_3HOURS_NAME} Outside precipitation in the last 3 hours."
-WEATHER_PRECIPITATION_LAST_3HOURS_TYPE = f"TYPE {WEATHER_PRECIPITATION_LAST_3HOURS_NAME} gauge"
+WEATHER_PRECIPITATION_LAST_3HOURS_HELP = f"# HELP {WEATHER_PRECIPITATION_LAST_3HOURS_NAME} Outside precipitation in the last 3 hours."
+WEATHER_PRECIPITATION_LAST_3HOURS_TYPE = f"# TYPE {WEATHER_PRECIPITATION_LAST_3HOURS_NAME} gauge"
 # weather_windspeed_km_per_hr 0.03
 
 WEATHER_PRECIPITATION_LAST_6HOURS_NAME = "weather_precipitation_last_6hours_meters"
-WEATHER_PRECIPITATION_LAST_6HOURS_HELP = f"HELP {WEATHER_PRECIPITATION_LAST_6HOURS_NAME} Outside precipitation in the last 6 hours."
-WEATHER_PRECIPITATION_LAST_6HOURS_TYPE = f"TYPE {WEATHER_PRECIPITATION_LAST_6HOURS_NAME} gauge"
+WEATHER_PRECIPITATION_LAST_6HOURS_HELP = f"# HELP {WEATHER_PRECIPITATION_LAST_6HOURS_NAME} Outside precipitation in the last 6 hours."
+WEATHER_PRECIPITATION_LAST_6HOURS_TYPE = f"# TYPE {WEATHER_PRECIPITATION_LAST_6HOURS_NAME} gauge"
 # weather_windspeed_km_per_hr 0.05
 
 WEATHER_UP_NAME = "weather_up"
-WEATHER_UP_HELP = f"HELP {WEATHER_UP_NAME} Is Weather.gov API connection successful."
-WEATHER_UP_TYPE = f"TYPE {WEATHER_UP_NAME} gauge"
+WEATHER_UP_HELP = f"# HELP {WEATHER_UP_NAME} Is Weather.gov API connection successful."
+WEATHER_UP_TYPE = f"# TYPE {WEATHER_UP_NAME} gauge"
 # weather_up 1
 
 @app.route('/')
