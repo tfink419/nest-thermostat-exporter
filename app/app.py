@@ -20,7 +20,7 @@ GOOGLE_CLIENT_SECRET = os.environ['GOOGLE_CLIENT_SECRET']
 GOOGLE_REFRESH_TOKEN = os.environ['GOOGLE_REFRESH_TOKEN']
 
 google_access_token = None
-google_access_expires_at = datetime.datetime.now()
+google_access_expires_at = datetime.datetime.now() - datetime.timedelta(seconds=1)
 
 WEATHER_API_URL = "https://api.weather.gov/stations/KBKF/observations/latest"
 
@@ -30,14 +30,29 @@ INSIDE_TEMPERTURE_TYPE = f"# TYPE {INSIDE_TEMPERTURE_NAME} gauge"
 # nest_ambient_temperature_celsius{label="Living-Room"} 23.5
 
 HVAC_STATE_NAME = "nest_hvac_state"
-HVAC_STATE_HELP = f"# HELP {HVAC_STATE_NAME} HVAC status, -1 = cooling, 0 = off, 1 = heating."
+HVAC_STATE_HELP = f"# HELP {HVAC_STATE_NAME} HVAC status, -1 = cooling, 0 = idle, 1 = heating."
 HVAC_STATE_TYPE = f"# TYPE {HVAC_STATE_NAME} gauge"
 # nest_hvac_state{label="Living-Room"} 0
 
-FAN_STATE_NAME = "nest_fan_state"
-FAN_STATE_HELP = f"# HELP {FAN_STATE_NAME} HVAC Fan status"
-FAN_STATE_TYPE = f"# TYPE {FAN_STATE_NAME} gauge"
-# nest_hvac_state{label="Living-Room"} 0
+HVAC_COOLING_NAME = "nest_hvac_cooling_minutes"
+HVAC_COOLING_HELP = f"# HELP {HVAC_COOLING_NAME} 1 = cooling, 0 = other"
+HVAC_COOLING_TYPE = f"# TYPE {HVAC_COOLING_NAME} count"
+# nest_hvac_cooling_minutes{label="Living-Room"} 1
+
+HVAC_HEATING_NAME = "nest_hvac_heating_minutes"
+HVAC_HEATING_HELP = f"# HELP {HVAC_HEATING_NAME} 1 = heating, 0 = other"
+HVAC_HEATING_TYPE = f"# TYPE {HVAC_HEATING_NAME} count"
+# nest_hvac_heating_minutes{label="Living-Room"} 0
+
+HVAC_IDLE_NAME = "nest_hvac_idle_minutes"
+HVAC_IDLE_HELP = f"# HELP {HVAC_IDLE_NAME} 1 = idle, 0 = other"
+HVAC_IDLE_TYPE = f"# TYPE {HVAC_IDLE_NAME} count"
+# nest_hvac_idle_minutes{label="Living-Room"} 0
+
+# FAN_STATE_NAME = "nest_fan_state"
+# FAN_STATE_HELP = f"# HELP {FAN_STATE_NAME} HVAC Fan status"
+# FAN_STATE_TYPE = f"# TYPE {FAN_STATE_NAME} gauge"
+# # nest_hvac_state{label="Living-Room"} 0
 
 INSIDE_HUMIDITY_NAME = "nest_humidity_percent"
 INSIDE_HUMIDITY_HELP = f"# HELP {INSIDE_HUMIDITY_NAME} Inside humidity."
@@ -123,18 +138,29 @@ def get_metrics():
 		metrics.append(f"{INSIDE_TEMPERTURE_NAME}{label} {google_stats['traits']['sdm.devices.traits.Temperature']['ambientTemperatureCelsius']}")
 		metrics.extend([INSIDE_HUMIDITY_HELP, INSIDE_HUMIDITY_TYPE])
 		metrics.append(f"{INSIDE_HUMIDITY_NAME}{label} {google_stats['traits']['sdm.devices.traits.Humidity']['ambientHumidityPercent']}")
+
 		metrics.extend([HVAC_STATE_HELP, HVAC_STATE_TYPE])
 		metrics.append(f"{HVAC_STATE_NAME}{label} {convert_nest_hvac_state(google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status'])}")
-		metrics.extend([FAN_STATE_HELP, FAN_STATE_TYPE])
-		metrics.append(f"{FAN_STATE_NAME}{label} {convert_nest_fan_state(google_stats['traits']['sdm.devices.traits.Fan']['timerMode'])}")
+		metrics.extend([HVAC_COOLING_HELP, HVAC_COOLING_TYPE])
+		metrics.append(f"{HVAC_COOLING_NAME}{label} {1 if google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status'] == 'COOLING' else 0}")
+		metrics.extend([HVAC_HEATING_HELP, HVAC_HEATING_TYPE])
+		metrics.append(f"{HVAC_HEATING_NAME}{label} {1 if google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status'] == 'HEATING' else 0}")
+		metrics.extend([HVAC_IDLE_HELP, HVAC_IDLE_TYPE])
+		metrics.append(f"{HVAC_IDLE_NAME}{label} {1 if google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status'] == 'OFF' else 0}")
+
+		# metrics.extend([FAN_STATE_HELP, FAN_STATE_TYPE])
+		# metrics.append(f"{FAN_STATE_NAME}{label} {convert_nest_fan_state(google_stats['traits']['sdm.devices.traits.Fan']['timerMode'])}")
+
 		metrics.extend([SETPOINT_HEATING_HELP, SETPOINT_HEATING_TYPE])
 		metrics.append(f"{SETPOINT_HEATING_NAME}{label} {google_stats['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint']['heatCelsius']}")
 		metrics.extend([SETPOINT_COOLING_HELP, SETPOINT_COOLING_TYPE])
 		metrics.append(f"{SETPOINT_COOLING_NAME}{label} {google_stats['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint']['coolCelsius']}")
+
 		metrics.extend([NEST_UP_HELP, NEST_UP_TYPE])
 		metrics.append(f"{NEST_UP_NAME} {convert_nest_api_state(google_stats['traits']['sdm.devices.traits.Connectivity']['status'])}")
-	except:
+	except Exception as inst:
 		logging.error("Google API Failure")
+		logging.error(inst)
 		metrics.extend([NEST_UP_HELP, NEST_UP_TYPE])
 		metrics.append(f"{NEST_UP_NAME} 0")
 
@@ -167,8 +193,9 @@ def get_metrics():
 
 		metrics.extend([WEATHER_UP_HELP, WEATHER_UP_TYPE])
 		metrics.append(f"{WEATHER_UP_NAME} 1")
-	except:
+	except Exception as inst:
 		logging.error("Weather.gov API Failure")
+		logging.error(inst)
 		metrics.extend([WEATHER_UP_HELP, WEATHER_UP_TYPE])
 		metrics.append(f"{WEATHER_UP_NAME} 0")
 
