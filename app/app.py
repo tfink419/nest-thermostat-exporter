@@ -36,17 +36,17 @@ HVAC_STATE_TYPE = f"# TYPE {HVAC_STATE_NAME} gauge"
 
 HVAC_COOLING_NAME = "nest_hvac_cooling_minutes"
 HVAC_COOLING_HELP = f"# HELP {HVAC_COOLING_NAME} 1 = cooling, 0 = other"
-HVAC_COOLING_TYPE = f"# TYPE {HVAC_COOLING_NAME} count"
+HVAC_COOLING_TYPE = f"# TYPE {HVAC_COOLING_NAME} counter"
 # nest_hvac_cooling_minutes{label="Living-Room"} 1
 
 HVAC_HEATING_NAME = "nest_hvac_heating_minutes"
 HVAC_HEATING_HELP = f"# HELP {HVAC_HEATING_NAME} 1 = heating, 0 = other"
-HVAC_HEATING_TYPE = f"# TYPE {HVAC_HEATING_NAME} count"
+HVAC_HEATING_TYPE = f"# TYPE {HVAC_HEATING_NAME} counter"
 # nest_hvac_heating_minutes{label="Living-Room"} 0
 
 HVAC_IDLE_NAME = "nest_hvac_idle_minutes"
 HVAC_IDLE_HELP = f"# HELP {HVAC_IDLE_NAME} 1 = idle, 0 = other"
-HVAC_IDLE_TYPE = f"# TYPE {HVAC_IDLE_NAME} count"
+HVAC_IDLE_TYPE = f"# TYPE {HVAC_IDLE_NAME} counter"
 # nest_hvac_idle_minutes{label="Living-Room"} 0
 
 # FAN_STATE_NAME = "nest_fan_state"
