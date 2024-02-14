@@ -174,28 +174,28 @@ def get_metrics():
 		weather_stats = get_weather_stats()
 
 		metrics.extend([WEATHER_TEMPERATURE_HELP, WEATHER_TEMPERATURE_TYPE])
-		metrics.append(f"{WEATHER_TEMPERATURE_NAME} {weather_stats['properties']['temperature']['value']}")
+		metrics.append(f"{WEATHER_TEMPERATURE_NAME} {weather_stats['properties']['temperature']['value'] or 0}")
 
 		metrics.extend([WEATHER_HUMIDITY_HELP, WEATHER_HUMIDITY_TYPE])
-		metrics.append(f"{WEATHER_HUMIDITY_NAME} {weather_stats['properties']['relativeHumidity']['value']}")
+		metrics.append(f"{WEATHER_HUMIDITY_NAME} {weather_stats['properties']['relativeHumidity']['value'] or 0}")
 
 		metrics.extend([WEATHER_DEWPOINT_HELP, WEATHER_DEWPOINT_TYPE])
-		metrics.append(f"{WEATHER_DEWPOINT_NAME} {weather_stats['properties']['dewpoint']['value']}")
+		metrics.append(f"{WEATHER_DEWPOINT_NAME} {weather_stats['properties']['dewpoint']['value'] or 0}")
 
 		metrics.extend([WEATHER_WINDSPEED_HELP, WEATHER_WINDSPEED_TYPE])
-		metrics.append(f"{WEATHER_WINDSPEED_NAME} {weather_stats['properties']['windSpeed']['value']}")
+		metrics.append(f"{WEATHER_WINDSPEED_NAME} {weather_stats['properties']['windSpeed']['value'] or 0}")
 
 		metrics.extend([WEATHER_PRESSURE_HELP, WEATHER_PRESSURE_TYPE])
-		metrics.append(f"{WEATHER_PRESSURE_NAME} {weather_stats['properties']['barometricPressure']['value']}")
+		metrics.append(f"{WEATHER_PRESSURE_NAME} {weather_stats['properties']['barometricPressure']['value'] or 0}")
 
 		metrics.extend([WEATHER_PRECIPITATION_LAST_HOUR_HELP, WEATHER_PRECIPITATION_LAST_HOUR_TYPE])
-		metrics.append(f"{WEATHER_PRECIPITATION_LAST_HOUR_NAME} {convert_precipitation(weather_stats['properties']['precipitationLastHour']['value'])}")
+		metrics.append(f"{WEATHER_PRECIPITATION_LAST_HOUR_NAME} {convert_precipitation(weather_stats['properties']['precipitationLastHour']['value'] or 0)}")
 
 		metrics.extend([WEATHER_PRECIPITATION_LAST_3HOURS_HELP, WEATHER_PRECIPITATION_LAST_3HOURS_TYPE])
-		metrics.append(f"{WEATHER_PRECIPITATION_LAST_3HOURS_NAME} {convert_precipitation(weather_stats['properties']['precipitationLast3Hours']['value'])}")
+		metrics.append(f"{WEATHER_PRECIPITATION_LAST_3HOURS_NAME} {convert_precipitation(weather_stats['properties']['precipitationLast3Hours']['value'] or 0)}")
 
 		metrics.extend([WEATHER_PRECIPITATION_LAST_6HOURS_HELP, WEATHER_PRECIPITATION_LAST_6HOURS_TYPE])
-		metrics.append(f"{WEATHER_PRECIPITATION_LAST_6HOURS_NAME} {convert_precipitation(weather_stats['properties']['precipitationLast6Hours']['value'])}")
+		metrics.append(f"{WEATHER_PRECIPITATION_LAST_6HOURS_NAME} {convert_precipitation(weather_stats['properties']['precipitationLast6Hours']['value'] or 0)}")
 
 		metrics.extend([WEATHER_UP_HELP, WEATHER_UP_TYPE])
 		metrics.append(f"{WEATHER_UP_NAME} 1")
