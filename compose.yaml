@@ -23,5 +23,5 @@ services:
       - DATABASE=/app/sqlite.db
     env_file:
       - .env
-    # networks:
-    #   - back-tier
+    networks:
+      - back-tier
