@@ -4,6 +4,7 @@ import json
 import datetime
 import logging
 import os
+import sqlite3
 
 # logging.basicConfig(level=logging.DEBUG)
 
@@ -22,6 +23,8 @@ GOOGLE_REFRESH_TOKEN = os.environ['GOOGLE_REFRESH_TOKEN']
 google_access_token = None
 google_access_expires_at = datetime.datetime.now() - datetime.timedelta(seconds=1)
 
+minutes_updated_at = datetime.datetime.now() - datetime.timedelta(minutes=1)
+
 WEATHER_API_URL = "https://api.weather.gov/stations/KBKF/observations/latest"
 
 INSIDE_TEMPERTURE_NAME = "nest_ambient_temperature_celsius"
@@ -34,20 +37,10 @@ HVAC_STATE_HELP = f"# HELP {HVAC_STATE_NAME} HVAC status, -1 = cooling, 0 = idle
 HVAC_STATE_TYPE = f"# TYPE {HVAC_STATE_NAME} gauge"
 # nest_hvac_state{label="Living-Room"} 0
 
-HVAC_COOLING_NAME = "nest_hvac_cooling_minutes"
-HVAC_COOLING_HELP = f"# HELP {HVAC_COOLING_NAME} 1 = cooling, 0 = other"
-HVAC_COOLING_TYPE = f"# TYPE {HVAC_COOLING_NAME} counter"
-# nest_hvac_cooling_minutes{label="Living-Room"} 1
-
-HVAC_HEATING_NAME = "nest_hvac_heating_minutes"
-HVAC_HEATING_HELP = f"# HELP {HVAC_HEATING_NAME} 1 = heating, 0 = other"
-HVAC_HEATING_TYPE = f"# TYPE {HVAC_HEATING_NAME} counter"
-# nest_hvac_heating_minutes{label="Living-Room"} 0
-
-HVAC_IDLE_NAME = "nest_hvac_idle_minutes"
-HVAC_IDLE_HELP = f"# HELP {HVAC_IDLE_NAME} 1 = idle, 0 = other"
-HVAC_IDLE_TYPE = f"# TYPE {HVAC_IDLE_NAME} counter"
-# nest_hvac_idle_minutes{label="Living-Room"} 0
+HVAC_MINUTES_NAME = "nest_hvac_status_minutes_total"
+HVAC_MINUTES_HELP = f"# HELP {HVAC_MINUTES_NAME} 1 = in state, 0 = other"
+HVAC_MINUTES_TYPE = f"# TYPE {HVAC_MINUTES_NAME} counter"
+# nest_hvac_status_minutes_total{label="Living-Room",state="HEATING"} 1
 
 # FAN_STATE_NAME = "nest_fan_state"
 # FAN_STATE_HELP = f"# HELP {FAN_STATE_NAME} HVAC Fan status"
@@ -121,7 +114,20 @@ WEATHER_UP_TYPE = f"# TYPE {WEATHER_UP_NAME} gauge"
 
 @app.route('/')
 def hello():
-	return "Hello World!"
+	conn = get_sqlite_conn()
+	version_info = conn.execute('select sqlite_version();').fetchone()
+	conn.close()
+	return f'''
+<html>
+	<head>
+		<title>Nest-Thermostat-Exporter</title>
+	</head>
+	<body>
+		<h1>Hello World!</h1>
+		<p>SQLite version: {version_info[0]}</p>
+	</body>
+</html>
+'''
 
 @app.route('/metrics')
 def get_metrics():
@@ -133,6 +139,7 @@ def get_metrics():
 		google_stats = get_google_stats()
 		room_name = google_stats['parentRelations'][0]['displayName'].replace(' ', '-')
 		label=f"{{label=\"{room_name}\"}}"
+		label_leftbracket = f"{{label=\"{room_name}\""
 
 		metrics.extend([INSIDE_TEMPERTURE_HELP, INSIDE_TEMPERTURE_TYPE])
 		metrics.append(f"{INSIDE_TEMPERTURE_NAME}{label} {google_stats['traits']['sdm.devices.traits.Temperature']['ambientTemperatureCelsius']}")
@@ -141,12 +148,11 @@ def get_metrics():
 
 		metrics.extend([HVAC_STATE_HELP, HVAC_STATE_TYPE])
 		metrics.append(f"{HVAC_STATE_NAME}{label} {convert_nest_hvac_state(google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status'])}")
-		metrics.extend([HVAC_COOLING_HELP, HVAC_COOLING_TYPE])
-		metrics.append(f"{HVAC_COOLING_NAME}{label} {1 if google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status'] == 'COOLING' else 0}")
-		metrics.extend([HVAC_HEATING_HELP, HVAC_HEATING_TYPE])
-		metrics.append(f"{HVAC_HEATING_NAME}{label} {1 if google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status'] == 'HEATING' else 0}")
-		metrics.extend([HVAC_IDLE_HELP, HVAC_IDLE_TYPE])
-		metrics.append(f"{HVAC_IDLE_NAME}{label} {1 if google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status'] == 'OFF' else 0}")
+		metrics.extend([HVAC_MINUTES_HELP, HVAC_MINUTES_TYPE])
+		minutes = process_hvac_state_minutes(google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status'])
+		metrics.append(f"{HVAC_MINUTES_NAME}{label_leftbracket},state=\"COOLING\"}} {minutes[0]}")
+		metrics.append(f"{HVAC_MINUTES_NAME}{label_leftbracket},state=\"HEATING\"}} {minutes[1]}")
+		metrics.append(f"{HVAC_MINUTES_NAME}{label_leftbracket},state=\"OFF\"}} {minutes[2]}")
 
 		# metrics.extend([FAN_STATE_HELP, FAN_STATE_TYPE])
 		# metrics.append(f"{FAN_STATE_NAME}{label} {convert_nest_fan_state(google_stats['traits']['sdm.devices.traits.Fan']['timerMode'])}")
@@ -252,6 +258,22 @@ def convert_nest_hvac_state(state_str):
 		case 'HEATING':
 			return 1
 
+def process_hvac_state_minutes(state_str):
+	global minutes_updated_at
+	conn = get_sqlite_conn()
+	m = list(conn.execute('SELECT cooling, off, heating FROM hvac_minutes;').fetchone())
+	logging.debug("Minutes --------------------------------------------------")
+	logging.debug(m)
+	if datetime.datetime.now() >= minutes_updated_at + datetime.timedelta(minutes=1):
+		minutes_updated_at = datetime.datetime.now()
+		m[convert_nest_hvac_state(state_str)+1] += 1
+		logging.debug(m)
+		conn.execute(f"INSERT OR REPLACE INTO hvac_minutes(cooling, off, heating) VALUES ({m[0]}, {m[1]}, {m[2]});")
+		conn.commit()
+		logging.debug("Minutes --------------------------------------------------")
+	conn.close()
+	return m
+
 def convert_nest_api_state(state_str):
 	match state_str:
 		case 'ONLINE':
@@ -272,5 +294,23 @@ def convert_precipitation(weather_gov_response):
 	else:
 		return 0
 
+CREATE_TABLE = '''CREATE TABLE IF NOT EXISTS hvac_minutes (
+heating INTEGER DEFAULT 0 UNIQUE,
+cooling INTEGER DEFAULT 0 UNIQUE,
+off INTEGER DEFAULT 0 UNIQUE
+);
+'''
+
+def get_sqlite_conn():
+	database = os.getenv('DATABASE', '/app/sqlite.db')
+	return sqlite3.connect(database)
+
 if __name__ == '__main__':
+	conn = get_sqlite_conn()
+	conn.execute(CREATE_TABLE)
+	minutes = conn.execute('SELECT * FROM hvac_minutes;').fetchone()
+	if minutes is None:
+		minute = conn.execute('INSERT INTO hvac_minutes (heating, cooling, off) VALUES (0, 0, 0);')
+		conn.commit()
+	conn.close()
 	app.run(host='0.0.0.0', port=8000)

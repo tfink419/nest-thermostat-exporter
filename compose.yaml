@@ -17,7 +17,11 @@ services:
       - 8000
     ports:
       - '8000:8000'
+    volumes:
+    - ./app:/app
+    environment:
+      - DATABASE=/app/sqlite.db
     env_file:
       - .env
-    networks:
-      - back-tier
+    # networks:
+    #   - back-tier
