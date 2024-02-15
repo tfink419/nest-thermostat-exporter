@@ -264,7 +264,7 @@ def process_hvac_state_minutes(state_str):
 	m = list(conn.execute('SELECT cooling, off, heating FROM hvac_minutes;').fetchone())
 	logging.debug("Minutes --------------------------------------------------")
 	logging.debug(m)
-	if datetime.datetime.now() >= minutes_updated_at + datetime.timedelta(minutes=1):
+	if datetime.datetime.now() >= minutes_updated_at + datetime.timedelta(seconds=55):
 		minutes_updated_at = datetime.datetime.now()
 		m[convert_nest_hvac_state(state_str)+1] += 1
 		logging.debug(m)
