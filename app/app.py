@@ -6,7 +6,7 @@ import logging
 import os
 import sqlite3
 
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -19,6 +19,9 @@ GOOGLE_DEVICE_URL = f"https://smartdevicemanagement.googleapis.com/v1/enterprise
 GOOGLE_CLIENT_ID = os.environ['GOOGLE_CLIENT_ID']
 GOOGLE_CLIENT_SECRET = os.environ['GOOGLE_CLIENT_SECRET']
 GOOGLE_REFRESH_TOKEN = os.environ['GOOGLE_REFRESH_TOKEN']
+
+HOME_ASSISTANT_URL = "http://10.0.0.5:8123/api/states"
+HOME_ASSISTANT_TOKEN = os.environ['HOME_ASSISTANT_TOKEN']
 
 google_access_token = None
 google_access_expires_at = datetime.datetime.now() - datetime.timedelta(seconds=1)
@@ -112,6 +115,32 @@ WEATHER_UP_HELP = f"# HELP {WEATHER_UP_NAME} Is Weather.gov API connection succe
 WEATHER_UP_TYPE = f"# TYPE {WEATHER_UP_NAME} gauge"
 # weather_up 1
 
+GOVEE_OUTDOOR_TEMPERATURE_NAME = "govee_outdoor_temperature_fahrenheit"
+GOVEE_OUTDOOR_TEMPERATURE_HELP = f"# HELP {GOVEE_OUTDOOR_TEMPERATURE_NAME} Outside temperature."
+GOVEE_OUTDOOR_TEMPERATURE_TYPE = f"# TYPE {GOVEE_OUTDOOR_TEMPERATURE_NAME} gauge"
+# govee_outdoor_temperature_fahrenheit 17.57
+
+GOVEE_OUTDOOR_HUMIDITY_NAME = "govee_outdoor_humidity_percent"
+GOVEE_OUTDOOR_HUMIDITY_HELP = f"# HELP {GOVEE_OUTDOOR_HUMIDITY_NAME} Outside humidity."
+GOVEE_OUTDOOR_HUMIDITY_TYPE = f"# TYPE {GOVEE_OUTDOOR_HUMIDITY_NAME} gauge"
+# govee_outdoor_humidity_percent 82
+
+GOVEE_INDOOR_TEMPERATURE_NAME = "govee_indoor_temperature_fahrenheit"
+GOVEE_INDOOR_TEMPERATURE_HELP = f"# HELP {GOVEE_INDOOR_TEMPERATURE_NAME} Inside temperature."
+GOVEE_INDOOR_TEMPERATURE_TYPE = f"# TYPE {GOVEE_INDOOR_TEMPERATURE_NAME} gauge"
+# govee_indoor_temperature_fahrenheit 17.57
+
+GOVEE_INDOOR_HUMIDITY_NAME = "govee_indoor_humidity_percent"
+GOVEE_INDOOR_HUMIDITY_HELP = f"# HELP {GOVEE_INDOOR_HUMIDITY_NAME} Inside humidity."
+GOVEE_INDOOR_HUMIDITY_TYPE = f"# TYPE {GOVEE_INDOOR_HUMIDITY_NAME} gauge"
+# govee_indoor_humidity_percent 82
+
+HOME_ASSISTANT_UP_NAME = "home_assistant_up"
+HOME_ASSISTANT_UP_HELP = f"# HELP {HOME_ASSISTANT_UP_NAME} Is Home Assistant API connection successful."
+HOME_ASSISTANT_UP_TYPE = f"# TYPE {HOME_ASSISTANT_UP_NAME} gauge"
+# home_assistant_up 1
+
+
 @app.route('/')
 def hello():
 	conn = get_sqlite_conn()
@@ -132,6 +161,14 @@ def hello():
 @app.route('/metrics')
 def get_metrics():
 	metrics = []
+	process_google_stats(metrics)
+	process_weather_stats(metrics)
+	process_home_assistant_stats(metrics)
+
+	metrics.append('')
+	return Response("\n".join(metrics), mimetype='text/plain')
+
+def process_google_stats(metrics):
 	try:
 		if datetime.datetime.now() > google_access_expires_at:
 			refresh_google_access()
@@ -170,6 +207,20 @@ def get_metrics():
 		metrics.extend([NEST_UP_HELP, NEST_UP_TYPE])
 		metrics.append(f"{NEST_UP_NAME} 0")
 
+def get_google_stats():
+	headers = {
+		'Content-Type': 'application/json',
+		'Authorization': f"Bearer {google_access_token}"
+	}
+
+	response = requests.request("GET", GOOGLE_DEVICE_URL, headers=headers, data={})
+	logging.debug(GOOGLE_DEVICE_URL)
+	logging.debug(headers)
+	logging.debug(response.text)
+
+	return response.json()
+
+def process_weather_stats(metrics):
 	try:
 		weather_stats = get_weather_stats()
 
@@ -206,9 +257,6 @@ def get_metrics():
 		metrics.append(f"{WEATHER_UP_NAME} 0")
 
 
-	metrics.append('')
-	return Response("\n".join(metrics), mimetype='text/plain')
-
 def get_weather_stats():
 	response = requests.request("GET", WEATHER_API_URL, headers={}, data={})
 
@@ -217,18 +265,42 @@ def get_weather_stats():
 
 	return response.json()
 
-def get_google_stats():
+def process_home_assistant_stats(metrics):
+	try:
+		home_assistant_stats = get_home_assistant_stats()
+
+		metrics.extend([GOVEE_OUTDOOR_TEMPERATURE_HELP, GOVEE_OUTDOOR_TEMPERATURE_TYPE])
+		metrics.append(f"{GOVEE_OUTDOOR_TEMPERATURE_NAME} {home_assistant_stats['sensor.h5074_977b_temperature']['state']}")
+
+		metrics.extend([GOVEE_OUTDOOR_HUMIDITY_HELP, GOVEE_OUTDOOR_HUMIDITY_TYPE])
+		metrics.append(f"{GOVEE_OUTDOOR_HUMIDITY_NAME} {home_assistant_stats['sensor.h5074_977b_humidity']['state']}")
+
+		metrics.extend([GOVEE_INDOOR_TEMPERATURE_HELP, GOVEE_INDOOR_TEMPERATURE_TYPE])
+		metrics.append(f"{GOVEE_INDOOR_HUMIDITY_NAME} {home_assistant_stats['sensor.h5074_4837_temperature']['state']}")
+
+		metrics.extend([GOVEE_INDOOR_HUMIDITY_HELP, GOVEE_INDOOR_HUMIDITY_TYPE])
+		metrics.append(f"{GOVEE_INDOOR_HUMIDITY_NAME} {home_assistant_stats['sensor.h5074_4837_humidity']['state']}")
+
+		metrics.extend([HOME_ASSISTANT_UP_HELP, HOME_ASSISTANT_UP_TYPE])
+		metrics.append(f"{HOME_ASSISTANT_UP_NAME} 1")
+	except Exception as inst:
+		logging.error("Home Assistant API Failure")
+		logging.error(inst)
+		metrics.extend([HOME_ASSISTANT_UP_HELP, HOME_ASSISTANT_UP_TYPE])
+		metrics.append(f"{HOME_ASSISTANT_UP_NAME} 0")
+
+def get_home_assistant_stats():
 	headers = {
 		'Content-Type': 'application/json',
-		'Authorization': f"Bearer {google_access_token}"
+		'Authorization': f"Bearer {HOME_ASSISTANT_TOKEN}"
 	}
 
-	response = requests.request("GET", GOOGLE_DEVICE_URL, headers=headers, data={})
-	logging.debug(GOOGLE_DEVICE_URL)
+	response = requests.request("GET", HOME_ASSISTANT_URL, headers=headers, data={})
+	logging.debug(HOME_ASSISTANT_URL)
 	logging.debug(headers)
 	logging.debug(response.text)
 
-	return response.json()
+	return {val['entity_id']: val for val in response.json()}
 
 def refresh_google_access():
 	global google_access_token, google_access_expires_at
