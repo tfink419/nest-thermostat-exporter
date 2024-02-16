@@ -276,7 +276,7 @@ def process_home_assistant_stats(metrics):
 		metrics.append(f"{GOVEE_OUTDOOR_HUMIDITY_NAME} {home_assistant_stats['sensor.h5074_977b_humidity']['state']}")
 
 		metrics.extend([GOVEE_INDOOR_TEMPERATURE_HELP, GOVEE_INDOOR_TEMPERATURE_TYPE])
-		metrics.append(f"{GOVEE_INDOOR_HUMIDITY_NAME} {home_assistant_stats['sensor.h5074_4837_temperature']['state']}")
+		metrics.append(f"{GOVEE_INDOOR_TEMPERATURE_NAME} {home_assistant_stats['sensor.h5074_4837_temperature']['state']}")
 
 		metrics.extend([GOVEE_INDOOR_HUMIDITY_HELP, GOVEE_INDOOR_HUMIDITY_TYPE])
 		metrics.append(f"{GOVEE_INDOOR_HUMIDITY_NAME} {home_assistant_stats['sensor.h5074_4837_humidity']['state']}")
