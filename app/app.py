@@ -119,14 +119,14 @@ def process_google_stats(metrics):
 			new_value = minutes[1],
 			labels = {
 				"label": room_name,
-				"state": "HEATING"
+				"state": "OFF"
 			}
 		)
 		metrics += nestHvacMinutes.print_value_text(
 			new_value = minutes[2],
 			labels = {
 				"label": room_name,
-				"state": "OFF"
+				"state": "HEATING"
 			}
 		)
 
