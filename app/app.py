@@ -5,8 +5,9 @@ import datetime
 import logging
 import os
 import sqlite3
+from metric import Metric
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -30,115 +31,29 @@ minutes_updated_at = datetime.datetime.now() - datetime.timedelta(minutes=1)
 
 WEATHER_API_URL = "https://api.weather.gov/stations/KBKF/observations/latest"
 
-INSIDE_TEMPERTURE_NAME = "nest_ambient_temperature_celsius"
-INSIDE_TEMPERTURE_HELP = f"# HELP {INSIDE_TEMPERTURE_NAME} Inside temperature."
-INSIDE_TEMPERTURE_TYPE = f"# TYPE {INSIDE_TEMPERTURE_NAME} gauge"
-# nest_ambient_temperature_celsius{label="Living-Room"} 23.5
+nestTemperature = Metric("nest_ambient_temperature_celsius", "gauge", "Inside temperature")
+nestHumidity = Metric("nest_humidity_percent", "gauge", "Inside humidty")
+nestState = Metric("nest_hvac_state", "gauge", "HVAC status, -1 = cooling, 0 = idle, 1 = heating")
+nestHvacMinutes = Metric("nest_hvac_status_minutes_total", "counter", "1 = in state, 0 = other")
+nestSetpointHeating = Metric("nest_setpoint_temperature_heating_celsius", "gauge", "Setpoint temperature for heating")
+nestSetpointCooling = Metric("nest_setpoint_temperature_cooling_celsius", "gauge", "Setpoint temperature for cooling")
+nestUp = Metric("nest_up", "gauge", "Is Nest API connection successful")
 
-HVAC_STATE_NAME = "nest_hvac_state"
-HVAC_STATE_HELP = f"# HELP {HVAC_STATE_NAME} HVAC status, -1 = cooling, 0 = idle, 1 = heating."
-HVAC_STATE_TYPE = f"# TYPE {HVAC_STATE_NAME} gauge"
-# nest_hvac_state{label="Living-Room"} 0
+weatherGovTemperature = Metric("weather_temperature_celsius", "gauge", "Outside temperature.")
+weatherGovHumidity = Metric("weather_dewpoint_celsius", "gauge", "Outside dewpoint.")
+weatherGovDewpoint = Metric("weather_humidity_percent", "gauge", "Outside humidity.")
+weatherGovPressure = Metric("weather_pressure_pascal", "gauge", "Outside pressure.")
+weatherGovWindspeed = Metric("weather_windspeed_km_per_hr", "gauge", "Outside windspeed.")
+weatherGovPrecipitationLastHours = Metric("weather_precipitation_last_hour_meters", "gauge", "Outside precipitation in the last hour.")
+weatherGovPrecipitationLast3Hours = Metric("weather_precipitation_last_3hours_meters", "gauge", "Outside precipitation in the last 3 hours.")
+weatherGovPrecipitationLast6Hours = Metric("weather_precipitation_last_6hours_meters", "gauge", "Outside precipitation in the last 6 hours.")
+weatherGovUp = Metric("weather_up", "gauge", "Is Weather.gov API connection successful.")
 
-HVAC_MINUTES_NAME = "nest_hvac_status_minutes_total"
-HVAC_MINUTES_HELP = f"# HELP {HVAC_MINUTES_NAME} 1 = in state, 0 = other"
-HVAC_MINUTES_TYPE = f"# TYPE {HVAC_MINUTES_NAME} counter"
-# nest_hvac_status_minutes_total{label="Living-Room",state="HEATING"} 1
-
-# FAN_STATE_NAME = "nest_fan_state"
-# FAN_STATE_HELP = f"# HELP {FAN_STATE_NAME} HVAC Fan status"
-# FAN_STATE_TYPE = f"# TYPE {FAN_STATE_NAME} gauge"
-# # nest_hvac_state{label="Living-Room"} 0
-
-INSIDE_HUMIDITY_NAME = "nest_humidity_percent"
-INSIDE_HUMIDITY_HELP = f"# HELP {INSIDE_HUMIDITY_NAME} Inside humidity."
-INSIDE_HUMIDITY_TYPE = f"# TYPE {INSIDE_HUMIDITY_NAME} gauge"
-# nest_humidity_percent{label="Living-Room"} 55
-
-SETPOINT_HEATING_NAME = "nest_setpoint_temperature_heating_celsius"
-SETPOINT_HEATING_HELP = f"# HELP {SETPOINT_HEATING_NAME} Setpoint temperature for heating."
-SETPOINT_HEATING_TYPE = f"# TYPE {SETPOINT_HEATING_NAME} gauge"
-# nest_setpoint_temperature_heating_celsius{label="Living-Room"} 18
-
-SETPOINT_COOLING_NAME = "nest_setpoint_temperature_cooling_celsius"
-SETPOINT_COOLING_HELP = f"# HELP {SETPOINT_COOLING_NAME} Setpoint temperature for cooling."
-SETPOINT_COOLING_TYPE = f"# TYPE {SETPOINT_COOLING_NAME} gauge"
-# nest_setpoint_temperature_cooling_celsius{label="Living-Room"} 22
-
-NEST_UP_NAME = "nest_up"
-NEST_UP_HELP = f"# HELP {NEST_UP_NAME} Is Nest API connection successful."
-NEST_UP_TYPE = f"# TYPE {NEST_UP_NAME} gauge"
-# nest_up 1
-
-WEATHER_TEMPERATURE_NAME = "weather_temperature_celsius"
-WEATHER_TEMPERATURE_HELP = f"# HELP {WEATHER_TEMPERATURE_NAME} Outside temperature."
-WEATHER_TEMPERATURE_TYPE = f"# TYPE {WEATHER_TEMPERATURE_NAME} gauge"
-# weather_temperature_celsius 17.57
-
-WEATHER_DEWPOINT_NAME = "weather_dewpoint_celsius"
-WEATHER_DEWPOINT_HELP = f"# HELP {WEATHER_DEWPOINT_NAME} Outside dewpoint."
-WEATHER_DEWPOINT_TYPE = f"# TYPE {WEATHER_DEWPOINT_NAME} gauge"
-# weather_dewpoint_celsius 17.57
-
-WEATHER_HUMIDITY_NAME = "weather_humidity_percent"
-WEATHER_HUMIDITY_HELP = f"# HELP {WEATHER_HUMIDITY_NAME} Outside humidity."
-WEATHER_HUMIDITY_TYPE = f"# TYPE {WEATHER_HUMIDITY_NAME} gauge"
-# weather_humidity_percent 82
-
-WEATHER_PRESSURE_NAME = "weather_pressure_pascal"
-WEATHER_PRESSURE_HELP = f"# HELP {WEATHER_PRESSURE_NAME} Outside pressure."
-WEATHER_PRESSURE_TYPE = f"# TYPE {WEATHER_PRESSURE_NAME} gauge"
-# weather_pressure_pascal 101600
-
-WEATHER_WINDSPEED_NAME = "weather_windspeed_km_per_hr"
-WEATHER_WINDSPEED_HELP = f"# HELP {WEATHER_WINDSPEED_NAME} Outside windspeed."
-WEATHER_WINDSPEED_TYPE = f"# TYPE {WEATHER_WINDSPEED_NAME} gauge"
-# weather_windspeed_km_per_hr 12
-
-WEATHER_PRECIPITATION_LAST_HOUR_NAME = "weather_precipitation_last_hour_meters"
-WEATHER_PRECIPITATION_LAST_HOUR_HELP = f"# HELP {WEATHER_PRECIPITATION_LAST_HOUR_NAME} Outside precipitation in the last hour."
-WEATHER_PRECIPITATION_LAST_HOUR_TYPE = f"# TYPE {WEATHER_PRECIPITATION_LAST_HOUR_NAME} gauge"
-# weather_windspeed_km_per_hr 0.01
-
-WEATHER_PRECIPITATION_LAST_3HOURS_NAME = "weather_precipitation_last_3hours_meters"
-WEATHER_PRECIPITATION_LAST_3HOURS_HELP = f"# HELP {WEATHER_PRECIPITATION_LAST_3HOURS_NAME} Outside precipitation in the last 3 hours."
-WEATHER_PRECIPITATION_LAST_3HOURS_TYPE = f"# TYPE {WEATHER_PRECIPITATION_LAST_3HOURS_NAME} gauge"
-# weather_windspeed_km_per_hr 0.03
-
-WEATHER_PRECIPITATION_LAST_6HOURS_NAME = "weather_precipitation_last_6hours_meters"
-WEATHER_PRECIPITATION_LAST_6HOURS_HELP = f"# HELP {WEATHER_PRECIPITATION_LAST_6HOURS_NAME} Outside precipitation in the last 6 hours."
-WEATHER_PRECIPITATION_LAST_6HOURS_TYPE = f"# TYPE {WEATHER_PRECIPITATION_LAST_6HOURS_NAME} gauge"
-# weather_windspeed_km_per_hr 0.05
-
-WEATHER_UP_NAME = "weather_up"
-WEATHER_UP_HELP = f"# HELP {WEATHER_UP_NAME} Is Weather.gov API connection successful."
-WEATHER_UP_TYPE = f"# TYPE {WEATHER_UP_NAME} gauge"
-# weather_up 1
-
-GOVEE_OUTDOOR_TEMPERATURE_NAME = "govee_outdoor_temperature_fahrenheit"
-GOVEE_OUTDOOR_TEMPERATURE_HELP = f"# HELP {GOVEE_OUTDOOR_TEMPERATURE_NAME} Outside temperature."
-GOVEE_OUTDOOR_TEMPERATURE_TYPE = f"# TYPE {GOVEE_OUTDOOR_TEMPERATURE_NAME} gauge"
-# govee_outdoor_temperature_fahrenheit 17.57
-
-GOVEE_OUTDOOR_HUMIDITY_NAME = "govee_outdoor_humidity_percent"
-GOVEE_OUTDOOR_HUMIDITY_HELP = f"# HELP {GOVEE_OUTDOOR_HUMIDITY_NAME} Outside humidity."
-GOVEE_OUTDOOR_HUMIDITY_TYPE = f"# TYPE {GOVEE_OUTDOOR_HUMIDITY_NAME} gauge"
-# govee_outdoor_humidity_percent 82
-
-GOVEE_INDOOR_TEMPERATURE_NAME = "govee_indoor_temperature_fahrenheit"
-GOVEE_INDOOR_TEMPERATURE_HELP = f"# HELP {GOVEE_INDOOR_TEMPERATURE_NAME} Inside temperature."
-GOVEE_INDOOR_TEMPERATURE_TYPE = f"# TYPE {GOVEE_INDOOR_TEMPERATURE_NAME} gauge"
-# govee_indoor_temperature_fahrenheit 17.57
-
-GOVEE_INDOOR_HUMIDITY_NAME = "govee_indoor_humidity_percent"
-GOVEE_INDOOR_HUMIDITY_HELP = f"# HELP {GOVEE_INDOOR_HUMIDITY_NAME} Inside humidity."
-GOVEE_INDOOR_HUMIDITY_TYPE = f"# TYPE {GOVEE_INDOOR_HUMIDITY_NAME} gauge"
-# govee_indoor_humidity_percent 82
-
-HOME_ASSISTANT_UP_NAME = "home_assistant_up"
-HOME_ASSISTANT_UP_HELP = f"# HELP {HOME_ASSISTANT_UP_NAME} Is Home Assistant API connection successful."
-HOME_ASSISTANT_UP_TYPE = f"# TYPE {HOME_ASSISTANT_UP_NAME} gauge"
-# home_assistant_up 1
+goveeIndoorTemperature = Metric("govee_outdoor_temperature_fahrenheit", "gauge", "Outside temperature.")
+goveeIndoorHumidity = Metric("govee_outdoor_humidity_percent", "gauge", "Outside humidity.")
+goveeOutdoorTemperature = Metric("govee_indoor_temperature_fahrenheit", "gauge", "Inside temperature.")
+goveeOutdoorHumidity = Metric("govee_indoor_humidity_percent", "gauge", "Inside humidity.")
+homeAssistantUp = Metric("home_assistant_up", "gauge", "Is Home Assistant API connection successful.")
 
 
 @app.route('/')
@@ -175,37 +90,64 @@ def process_google_stats(metrics):
 		
 		google_stats = get_google_stats()
 		room_name = google_stats['parentRelations'][0]['displayName'].replace(' ', '-')
-		label=f"{{label=\"{room_name}\"}}"
-		label_leftbracket = f"{{label=\"{room_name}\""
 
-		metrics.extend([INSIDE_TEMPERTURE_HELP, INSIDE_TEMPERTURE_TYPE])
-		metrics.append(f"{INSIDE_TEMPERTURE_NAME}{label} {google_stats['traits']['sdm.devices.traits.Temperature']['ambientTemperatureCelsius']}")
-		metrics.extend([INSIDE_HUMIDITY_HELP, INSIDE_HUMIDITY_TYPE])
-		metrics.append(f"{INSIDE_HUMIDITY_NAME}{label} {google_stats['traits']['sdm.devices.traits.Humidity']['ambientHumidityPercent']}")
+		metrics += nestState.print_metrics(
+			new_value = convert_nest_hvac_state(google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status']),
+			labels = { "label": room_name }
+		)
 
-		metrics.extend([HVAC_STATE_HELP, HVAC_STATE_TYPE])
-		metrics.append(f"{HVAC_STATE_NAME}{label} {convert_nest_hvac_state(google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status'])}")
-		metrics.extend([HVAC_MINUTES_HELP, HVAC_MINUTES_TYPE])
+		metrics += nestTemperature.print_metrics(
+			new_value = google_stats['traits']['sdm.devices.traits.Temperature']['ambientTemperatureCelsius'],
+			labels = { "label": room_name }
+		)
+
+		metrics += nestHumidity.print_metrics(
+			new_value = google_stats['traits']['sdm.devices.traits.Humidity']['ambientHumidityPercent'],
+			labels = { "label": room_name }
+		)
+
+		metrics += nestHvacMinutes.print_help_text()
 		minutes = process_hvac_state_minutes(google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status'])
-		metrics.append(f"{HVAC_MINUTES_NAME}{label_leftbracket},state=\"COOLING\"}} {minutes[0]}")
-		metrics.append(f"{HVAC_MINUTES_NAME}{label_leftbracket},state=\"HEATING\"}} {minutes[1]}")
-		metrics.append(f"{HVAC_MINUTES_NAME}{label_leftbracket},state=\"OFF\"}} {minutes[2]}")
+		metrics += nestHvacMinutes.print_value_text(
+			new_value = minutes[0],
+			labels = {
+				"label": room_name,
+				"state": "COOLING"
+			}
+		)
+		metrics += nestHvacMinutes.print_value_text(
+			new_value = minutes[1],
+			labels = {
+				"label": room_name,
+				"state": "HEATING"
+			}
+		)
+		metrics += nestHvacMinutes.print_value_text(
+			new_value = minutes[2],
+			labels = {
+				"label": room_name,
+				"state": "OFF"
+			}
+		)
 
-		# metrics.extend([FAN_STATE_HELP, FAN_STATE_TYPE])
-		# metrics.append(f"{FAN_STATE_NAME}{label} {convert_nest_fan_state(google_stats['traits']['sdm.devices.traits.Fan']['timerMode'])}")
+		metrics += nestSetpointHeating.print_metrics(
+			new_value = google_stats['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint']['heatCelsius'],
+			labels = {
+				"label": room_name
+			}
+		)
+		metrics += nestSetpointCooling.print_metrics(
+			new_value = google_stats['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint']['coolCelsius'],
+			labels = {
+				"label": room_name
+			}
+		)
 
-		metrics.extend([SETPOINT_HEATING_HELP, SETPOINT_HEATING_TYPE])
-		metrics.append(f"{SETPOINT_HEATING_NAME}{label} {google_stats['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint']['heatCelsius']}")
-		metrics.extend([SETPOINT_COOLING_HELP, SETPOINT_COOLING_TYPE])
-		metrics.append(f"{SETPOINT_COOLING_NAME}{label} {google_stats['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint']['coolCelsius']}")
-
-		metrics.extend([NEST_UP_HELP, NEST_UP_TYPE])
-		metrics.append(f"{NEST_UP_NAME} {convert_nest_api_state(google_stats['traits']['sdm.devices.traits.Connectivity']['status'])}")
+		metrics += nestUp.print_metrics(convert_nest_api_state(google_stats['traits']['sdm.devices.traits.Connectivity']['status']))
 	except Exception as inst:
 		logging.error("Google API Failure")
 		logging.error(inst)
-		metrics.extend([NEST_UP_HELP, NEST_UP_TYPE])
-		metrics.append(f"{NEST_UP_NAME} 0")
+		metrics += nestUp.print_metrics(0)
 
 def get_google_stats():
 	headers = {
@@ -224,37 +166,19 @@ def process_weather_stats(metrics):
 	try:
 		weather_stats = get_weather_stats()
 
-		metrics.extend([WEATHER_TEMPERATURE_HELP, WEATHER_TEMPERATURE_TYPE])
-		metrics.append(f"{WEATHER_TEMPERATURE_NAME} {weather_stats['properties']['temperature']['value'] or 0}")
-
-		metrics.extend([WEATHER_HUMIDITY_HELP, WEATHER_HUMIDITY_TYPE])
-		metrics.append(f"{WEATHER_HUMIDITY_NAME} {weather_stats['properties']['relativeHumidity']['value'] or 0}")
-
-		metrics.extend([WEATHER_DEWPOINT_HELP, WEATHER_DEWPOINT_TYPE])
-		metrics.append(f"{WEATHER_DEWPOINT_NAME} {weather_stats['properties']['dewpoint']['value'] or 0}")
-
-		metrics.extend([WEATHER_WINDSPEED_HELP, WEATHER_WINDSPEED_TYPE])
-		metrics.append(f"{WEATHER_WINDSPEED_NAME} {weather_stats['properties']['windSpeed']['value'] or 0}")
-
-		metrics.extend([WEATHER_PRESSURE_HELP, WEATHER_PRESSURE_TYPE])
-		metrics.append(f"{WEATHER_PRESSURE_NAME} {weather_stats['properties']['barometricPressure']['value'] or 0}")
-
-		metrics.extend([WEATHER_PRECIPITATION_LAST_HOUR_HELP, WEATHER_PRECIPITATION_LAST_HOUR_TYPE])
-		metrics.append(f"{WEATHER_PRECIPITATION_LAST_HOUR_NAME} {convert_precipitation(weather_stats['properties']['precipitationLastHour']['value'] or 0)}")
-
-		metrics.extend([WEATHER_PRECIPITATION_LAST_3HOURS_HELP, WEATHER_PRECIPITATION_LAST_3HOURS_TYPE])
-		metrics.append(f"{WEATHER_PRECIPITATION_LAST_3HOURS_NAME} {convert_precipitation(weather_stats['properties']['precipitationLast3Hours']['value'] or 0)}")
-
-		metrics.extend([WEATHER_PRECIPITATION_LAST_6HOURS_HELP, WEATHER_PRECIPITATION_LAST_6HOURS_TYPE])
-		metrics.append(f"{WEATHER_PRECIPITATION_LAST_6HOURS_NAME} {convert_precipitation(weather_stats['properties']['precipitationLast6Hours']['value'] or 0)}")
-
-		metrics.extend([WEATHER_UP_HELP, WEATHER_UP_TYPE])
-		metrics.append(f"{WEATHER_UP_NAME} 1")
+		metrics += weatherGovTemperature.print_metrics(weather_stats['properties']['temperature']['value'])
+		metrics += weatherGovHumidity.print_metrics(weather_stats['properties']['relativeHumidity']['value'])
+		metrics += weatherGovDewpoint.print_metrics(weather_stats['properties']['dewpoint']['value'])
+		metrics += weatherGovPressure.print_metrics(weather_stats['properties']['barometricPressure']['value'])
+		metrics += weatherGovWindspeed.print_metrics(weather_stats['properties']['windSpeed']['value'])
+		metrics += weatherGovPrecipitationLastHours.print_metrics(convert_precipitation(weather_stats['properties']['precipitationLastHour']['value']))
+		metrics += weatherGovPrecipitationLast3Hours.print_metrics(convert_precipitation(weather_stats['properties']['precipitationLast3Hours']['value']))
+		metrics += weatherGovPrecipitationLast6Hours.print_metrics(convert_precipitation(weather_stats['properties']['precipitationLast6Hours']['value']))
+		metrics += weatherGovUp.print_metrics(1)
 	except Exception as inst:
 		logging.error("Weather.gov API Failure")
 		logging.error(inst)
-		metrics.extend([WEATHER_UP_HELP, WEATHER_UP_TYPE])
-		metrics.append(f"{WEATHER_UP_NAME} 0")
+		metrics += weatherGovUp.print_metrics(0)
 
 
 def get_weather_stats():
@@ -269,25 +193,15 @@ def process_home_assistant_stats(metrics):
 	try:
 		home_assistant_stats = get_home_assistant_stats()
 
-		metrics.extend([GOVEE_OUTDOOR_TEMPERATURE_HELP, GOVEE_OUTDOOR_TEMPERATURE_TYPE])
-		metrics.append(f"{GOVEE_OUTDOOR_TEMPERATURE_NAME} {home_assistant_stats['sensor.h5074_977b_temperature']['state']}")
-
-		metrics.extend([GOVEE_OUTDOOR_HUMIDITY_HELP, GOVEE_OUTDOOR_HUMIDITY_TYPE])
-		metrics.append(f"{GOVEE_OUTDOOR_HUMIDITY_NAME} {home_assistant_stats['sensor.h5074_977b_humidity']['state']}")
-
-		metrics.extend([GOVEE_INDOOR_TEMPERATURE_HELP, GOVEE_INDOOR_TEMPERATURE_TYPE])
-		metrics.append(f"{GOVEE_INDOOR_TEMPERATURE_NAME} {home_assistant_stats['sensor.h5074_4837_temperature']['state']}")
-
-		metrics.extend([GOVEE_INDOOR_HUMIDITY_HELP, GOVEE_INDOOR_HUMIDITY_TYPE])
-		metrics.append(f"{GOVEE_INDOOR_HUMIDITY_NAME} {home_assistant_stats['sensor.h5074_4837_humidity']['state']}")
-
-		metrics.extend([HOME_ASSISTANT_UP_HELP, HOME_ASSISTANT_UP_TYPE])
-		metrics.append(f"{HOME_ASSISTANT_UP_NAME} 1")
+		metrics += goveeIndoorTemperature.print_metrics(home_assistant_stats['sensor.h5074_977b_temperature']['state'])
+		metrics += goveeIndoorHumidity.print_metrics(home_assistant_stats['sensor.h5074_977b_humidity']['state'])
+		metrics += goveeOutdoorTemperature.print_metrics(home_assistant_stats['sensor.h5074_4837_temperature']['state'])
+		metrics += goveeOutdoorHumidity.print_metrics(home_assistant_stats['sensor.h5074_4837_humidity']['state'])
+		metrics += homeAssistantUp.print_metrics(1)
 	except Exception as inst:
 		logging.error("Home Assistant API Failure")
 		logging.error(inst)
-		metrics.extend([HOME_ASSISTANT_UP_HELP, HOME_ASSISTANT_UP_TYPE])
-		metrics.append(f"{HOME_ASSISTANT_UP_NAME} 0")
+		metrics += homeAssistantUp.print_metrics(0)
 
 def get_home_assistant_stats():
 	headers = {
@@ -362,7 +276,7 @@ def convert_nest_fan_state(state_str):
 
 def convert_precipitation(weather_gov_response):
 	if weather_gov_response:
-		return weather_gov_response / 1000
+		return weather_gov_response / 1000.0
 	else:
 		return 0
 
