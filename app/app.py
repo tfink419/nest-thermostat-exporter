@@ -92,38 +92,38 @@ def process_google_stats(metrics):
 		room_name = google_stats['parentRelations'][0]['displayName'].replace(' ', '-')
 
 		metrics += nestState.print_metrics(
-			new_value = convert_nest_hvac_state(google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status']),
+			value = convert_nest_hvac_state(google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status']),
 			labels = { "label": room_name }
 		)
 
 		metrics += nestTemperature.print_metrics(
-			new_value = google_stats['traits']['sdm.devices.traits.Temperature']['ambientTemperatureCelsius'],
+			value = google_stats['traits']['sdm.devices.traits.Temperature']['ambientTemperatureCelsius'],
 			labels = { "label": room_name }
 		)
 
 		metrics += nestHumidity.print_metrics(
-			new_value = google_stats['traits']['sdm.devices.traits.Humidity']['ambientHumidityPercent'],
+			value = google_stats['traits']['sdm.devices.traits.Humidity']['ambientHumidityPercent'],
 			labels = { "label": room_name }
 		)
 
 		metrics += nestHvacMinutes.print_help_text()
 		minutes = process_hvac_state_minutes(google_stats['traits']['sdm.devices.traits.ThermostatHvac']['status'])
 		metrics += nestHvacMinutes.print_value_text(
-			new_value = minutes[0],
+			value = minutes[0],
 			labels = {
 				"label": room_name,
 				"state": "COOLING"
 			}
 		)
 		metrics += nestHvacMinutes.print_value_text(
-			new_value = minutes[1],
+			value = minutes[1],
 			labels = {
 				"label": room_name,
 				"state": "OFF"
 			}
 		)
 		metrics += nestHvacMinutes.print_value_text(
-			new_value = minutes[2],
+			value = minutes[2],
 			labels = {
 				"label": room_name,
 				"state": "HEATING"
@@ -131,13 +131,13 @@ def process_google_stats(metrics):
 		)
 
 		metrics += nestSetpointHeating.print_metrics(
-			new_value = google_stats['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint']['heatCelsius'],
+			value = google_stats['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint']['heatCelsius'],
 			labels = {
 				"label": room_name
 			}
 		)
 		metrics += nestSetpointCooling.print_metrics(
-			new_value = google_stats['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint']['coolCelsius'],
+			value = google_stats['traits']['sdm.devices.traits.ThermostatTemperatureSetpoint']['coolCelsius'],
 			labels = {
 				"label": room_name
 			}

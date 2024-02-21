@@ -9,18 +9,18 @@ class Metric:
   help_text = None
   metric_name = None
   metric_type = None
-  value = None
+  # value = None
 
   def __init__(self, n, t, h):
     self.metric_name = n
     self.metric_type = t
     self.help_text = h
 
-  def print_metrics(self, new_value = None, labels = {}):
-    if new_value:
-      self.value = new_value
+  def print_metrics(self, value, labels = {}):
+    # if new_value:
+    #   self.value = new_value
 
-    return self.print_help_text() + self.print_value_text(new_value, labels)
+    return self.print_help_text() + self.print_value_text(value, labels)
 
   def print_help_text(self):
     return [
@@ -28,11 +28,11 @@ class Metric:
       f"# TYPE {self.metric_name} {self.metric_type}"
     ]
 
-  def print_value_text(self, new_value = None, labels = {}):
-    if new_value:
-      self.value = new_value
+  def print_value_text(self, value, labels = {}):
+    # if new_value:
+    #   self.value = new_value
 
-    return [f"{self.metric_name}{serialize_labels(labels)} {self.value or 0}"]
+    return [f"{self.metric_name}{serialize_labels(labels)} {value or 0}"]
     
 
   def set_value(self, v):
