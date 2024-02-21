@@ -40,8 +40,8 @@ nestSetpointCooling = Metric("nest_setpoint_temperature_cooling_celsius", "gauge
 nestUp = Metric("nest_up", "gauge", "Is Nest API connection successful")
 
 weatherGovTemperature = Metric("weather_temperature_celsius", "gauge", "Outside temperature.")
-weatherGovHumidity = Metric("weather_dewpoint_celsius", "gauge", "Outside dewpoint.")
-weatherGovDewpoint = Metric("weather_humidity_percent", "gauge", "Outside humidity.")
+weatherGovDewpoint = Metric("weather_dewpoint_celsius", "gauge", "Outside dewpoint.")
+weatherGovHumidity = Metric("weather_humidity_percent", "gauge", "Outside humidity.")
 weatherGovPressure = Metric("weather_pressure_pascal", "gauge", "Outside pressure.")
 weatherGovWindspeed = Metric("weather_windspeed_km_per_hr", "gauge", "Outside windspeed.")
 weatherGovPrecipitationLastHours = Metric("weather_precipitation_last_hour_meters", "gauge", "Outside precipitation in the last hour.")
