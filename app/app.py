@@ -5,7 +5,7 @@ import datetime
 import logging
 import os
 import sqlite3
-from metric import Metric
+from metric import Metric, Gauge, Counter
 
 # logging.basicConfig(level=logging.DEBUG)
 
@@ -31,29 +31,29 @@ minutes_updated_at = datetime.datetime.now() - datetime.timedelta(minutes=1)
 
 WEATHER_API_URL = "https://api.weather.gov/stations/KBKF/observations/latest"
 
-nestTemperature = Metric("nest_ambient_temperature_celsius", "gauge", "Inside temperature")
-nestHumidity = Metric("nest_humidity_percent", "gauge", "Inside humidty")
-nestState = Metric("nest_hvac_state", "gauge", "HVAC status, -1 = cooling, 0 = idle, 1 = heating")
-nestHvacMinutes = Metric("nest_hvac_status_minutes_total", "counter", "1 = in state, 0 = other")
-nestSetpointHeating = Metric("nest_setpoint_temperature_heating_celsius", "gauge", "Setpoint temperature for heating")
-nestSetpointCooling = Metric("nest_setpoint_temperature_cooling_celsius", "gauge", "Setpoint temperature for cooling")
-nestUp = Metric("nest_up", "gauge", "Is Nest API connection successful")
+nestTemperature = Gauge("nest_ambient_temperature_celsius", "Inside temperature")
+nestHumidity = Gauge("nest_humidity_percent", "Inside humidty")
+nestState = Gauge("nest_hvac_state", "HVAC status, -1 = cooling, 0 = idle, 1 = heating")
+nestHvacMinutes = Counter("nest_hvac_status_minutes_total", "1 = in state, 0 = other")
+nestSetpointHeating = Gauge("nest_setpoint_temperature_heating_celsius", "Setpoint temperature for heating")
+nestSetpointCooling = Gauge("nest_setpoint_temperature_cooling_celsius", "Setpoint temperature for cooling")
+nestUp = Gauge("nest_up", "Is Nest API connection successful")
 
-weatherGovTemperature = Metric("weather_temperature_celsius", "gauge", "Outside temperature.")
-weatherGovDewpoint = Metric("weather_dewpoint_celsius", "gauge", "Outside dewpoint.")
-weatherGovHumidity = Metric("weather_humidity_percent", "gauge", "Outside humidity.")
-weatherGovPressure = Metric("weather_pressure_pascal", "gauge", "Outside pressure.")
-weatherGovWindspeed = Metric("weather_windspeed_km_per_hr", "gauge", "Outside windspeed.")
-weatherGovPrecipitationLastHours = Metric("weather_precipitation_last_hour_meters", "gauge", "Outside precipitation in the last hour.")
-weatherGovPrecipitationLast3Hours = Metric("weather_precipitation_last_3hours_meters", "gauge", "Outside precipitation in the last 3 hours.")
-weatherGovPrecipitationLast6Hours = Metric("weather_precipitation_last_6hours_meters", "gauge", "Outside precipitation in the last 6 hours.")
-weatherGovUp = Metric("weather_up", "gauge", "Is Weather.gov API connection successful.")
+weatherGovTemperature = Gauge("weather_temperature_celsius", "Outside temperature.")
+weatherGovDewpoint = Gauge("weather_dewpoint_celsius", "Outside dewpoint.")
+weatherGovHumidity = Gauge("weather_humidity_percent", "Outside humidity.")
+weatherGovPressure = Gauge("weather_pressure_pascal", "Outside pressure.")
+weatherGovWindspeed = Gauge("weather_windspeed_km_per_hr", "Outside windspeed.")
+weatherGovPrecipitationLastHours = Gauge("weather_precipitation_last_hour_meters", "Outside precipitation in the last hour.")
+weatherGovPrecipitationLast3Hours = Gauge("weather_precipitation_last_3hours_meters", "Outside precipitation in the last 3 hours.")
+weatherGovPrecipitationLast6Hours = Gauge("weather_precipitation_last_6hours_meters", "Outside precipitation in the last 6 hours.")
+weatherGovUp = Gauge("weather_up", "Is Weather.gov API connection successful.")
 
-goveeIndoorTemperature = Metric("govee_outdoor_temperature_fahrenheit", "gauge", "Outside temperature.")
-goveeIndoorHumidity = Metric("govee_outdoor_humidity_percent", "gauge", "Outside humidity.")
-goveeOutdoorTemperature = Metric("govee_indoor_temperature_fahrenheit", "gauge", "Inside temperature.")
-goveeOutdoorHumidity = Metric("govee_indoor_humidity_percent", "gauge", "Inside humidity.")
-homeAssistantUp = Metric("home_assistant_up", "gauge", "Is Home Assistant API connection successful.")
+goveeIndoorTemperature = Gauge("govee_outdoor_temperature_fahrenheit", "Outside temperature.")
+goveeIndoorHumidity = Gauge("govee_outdoor_humidity_percent", "Outside humidity.")
+goveeOutdoorTemperature = Gauge("govee_indoor_temperature_fahrenheit", "Inside temperature.")
+goveeOutdoorHumidity = Gauge("govee_indoor_humidity_percent", "Inside humidity.")
+homeAssistantUp = Gauge("home_assistant_up", "Is Home Assistant API connection successful.")
 
 
 @app.route('/')

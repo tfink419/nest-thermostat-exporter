@@ -11,10 +11,10 @@ class Metric:
   metric_type = None
   # value = None
 
-  def __init__(self, n, t, h):
-    self.metric_name = n
-    self.metric_type = t
-    self.help_text = h
+  def __init__(self, metric_name, metric_type, help_text):
+    self.metric_name = metric_name
+    self.metric_type = metric_type
+    self.help_text = help_text
 
   def print_metrics(self, value, labels = {}):
     # if new_value:
@@ -37,3 +37,17 @@ class Metric:
 
   def set_value(self, v):
     self.value = v
+
+class Gauge(Metric):
+  metric_type = "gauge"
+
+  def __init__(self, metric_name, help_text):
+    self.metric_name = metric_name
+    self.help_text = help_text
+
+class Counter(Metric):
+  metric_type = "counter"
+
+  def __init__(self, metric_name, help_text):
+    self.metric_name = metric_name
+    self.help_text = help_text
