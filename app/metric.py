@@ -38,16 +38,13 @@ class Metric:
   def set_value(self, v):
     self.value = v
 
-class Gauge(Metric):
+class _MetricType(Metric):
+  def __init__(self, metric_name, help_text):
+    self.metric_name = metric_name
+    self.help_text = help_text
+
+class Gauge(_MetricType):
   metric_type = "gauge"
 
-  def __init__(self, metric_name, help_text):
-    self.metric_name = metric_name
-    self.help_text = help_text
-
-class Counter(Metric):
+class Counter(_MetricType):
   metric_type = "counter"
-
-  def __init__(self, metric_name, help_text):
-    self.metric_name = metric_name
-    self.help_text = help_text
